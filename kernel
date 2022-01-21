@@ -1,0 +1,56 @@
+#The free parameters of kernel density estimation are the kernel, which specifies:
+#the shape of the distribution placed at each point, and the kernel bandwidth, which controls the size of the kernel at each point
+
+
+#scikit-learn’s main functionality includes classification, regression, clustering, dimensionality reduction, model selection and pre-processing. 
+#sThe library is very simple to use and most importantly efficient as it is built on NumPy, SciPy and matplotlib
+#In general, you are advised to install the library using the scikit-learn identifier (i.e. pip install scikit-learn) 
+#but in your source code, you must import it using the sklearn identifier (i.e. import sklearn)
+
+
+from sklearn.neighbors import KernelDensity
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def make_data(N, f=0.3, rseed=1):
+    rand = np.random.RandomState(rseed)
+    x = rand.randn(N)
+    x[int(f * N):] += 5
+    return x
+
+x = make_data(1000)
+x_d = np.linspace(-4, 8, 2000)
+###################################################################################
+
+kde = KernelDensity(bandwidth=1.0, kernel='gaussian')
+kde.fit(x[:, None])
+#shape's options are: 'gaussina', 'linear', 'cosine', 'tophat', 'exponential','epanechnikov'
+
+
+logprob=kde.score_samples((x_d[:, None]))
+# score_samples returns the log of the probability density: so to see the density function:
+plt.plot(x_d, np.exp(logprob))
+
+
+#The choice of bandwidth within KDE is important to finding a suitable density estimate, and is the knob that controls the bias–variance trade-off in the estimate of density:
+#too narrow a bandwidth leads to a high-variance estimate (i.e., over-fitting), where the presence or absence of a single point makes a large difference. 
+#Too wide a bandwidth leads to a high-bias estimate (i.e., under-fitting) where the structure in the data is washed out by the wide kernel.
+#n machine learning contexts, hyperparameter tuning often is done empirically via a cross-validation approach.The KernelDensity estimator in Scikit-Learn is designed such 
+#that it can be used directly within the Scikit-Learn's standard grid search tools. Here we will use GridSearchCV
+
+
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import LeaveOneOut
+
+bandwidths = 10 ** np.linspace(-1, 1, 100)
+#we want to find the best bandwith between 0.1 to 10
+grid = GridSearchCV(KernelDensity(kernel='gaussian'),{'bandwidth': bandwidths},
+                    cv=LeaveOneOut())
+grid.fit(x[:, None]);
+
+#Now we can find the choice of bandwidth which maximizes the score (which in this case defaults to the log-likelihood):
+grid.best_params_
+
