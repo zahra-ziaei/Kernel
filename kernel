@@ -22,13 +22,12 @@ def make_data(N, f=0.3, rseed=1):
 x = make_data(1000)
 x_d = np.linspace(-4, 8, 2000)
 ###################################################################################
-
-kde = KernelDensity(bandwidth=1.0, kernel='gaussian')
-kde.fit(x[:, None])
+model= KernelDensity(bandwidth=1.0, kernel='gaussian')
+model.fit(x[:, None])
 #shape's options are: 'gaussina', 'linear', 'cosine', 'tophat', 'exponential','epanechnikov'
 
 
-logprob=kde.score_samples((x_d[:, None]))
+logprob=model.score_samples((x_d[:, None]))
 # score_samples returns the log of the probability density: so to see the density function:
 plt.plot(x_d, np.exp(logprob))
 
